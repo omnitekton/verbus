@@ -27,6 +27,8 @@ The app currently includes two sample categories:
 
 - Cars / Samochody
 - Animals / Zwierzęta
+- Science / Nauka
+- Food / Jedzenie
 
 ## Key gameplay rules
 
