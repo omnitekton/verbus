@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -725,6 +726,14 @@ private fun SummaryContent(
     modifier: Modifier = Modifier,
 ) {
     val languageCode = currentLanguageCode()
+    val primaryButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.onBackground,
+        contentColor = MaterialTheme.colorScheme.background,
+    )
+    val secondaryButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.14f),
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    )
 
     Surface(modifier = modifier.fillMaxSize()) {
         Box(
@@ -749,6 +758,7 @@ private fun SummaryContent(
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -799,6 +809,7 @@ private fun SummaryContent(
 
                 Button(
                     onClick = onPlayAgain,
+                    colors = primaryButtonColors,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp),
@@ -811,6 +822,7 @@ private fun SummaryContent(
 
                 Button(
                     onClick = onBackToMenu,
+                    colors = secondaryButtonColors,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 56.dp),

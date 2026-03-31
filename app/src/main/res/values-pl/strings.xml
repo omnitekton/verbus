@@ -24,7 +24,7 @@
 
     <string name="round_topic_counter">Hasło %1$d z %2$d</string>
     <string name="round_completed_counter">Zaliczone: %1$d</string>
-    <string name="round_timed_out_counter">Przekroczony czas: %1$d</string>
+    <string name="round_timed_out_counter">Po czasie: %1$d</string>
     <string name="round_timer_label">Pozostało: %1$d s</string>
     <string name="round_topic_label">Aktualne hasło</string>
 

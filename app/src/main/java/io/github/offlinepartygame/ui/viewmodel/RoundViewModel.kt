@@ -39,15 +39,12 @@ data class RoundUiState(
         } else {
             settings.signalMethod
         }
-
-    val isRoundActive: Boolean
-        get() = activeRound != null
 }
 
 class RoundViewModel(
     private val roundCoordinator: RoundCoordinator,
-    private val settingsRepository: SettingsRepository,
-    private val shakeSupportChecker: ShakeSupportChecker,
+    settingsRepository: SettingsRepository,
+    shakeSupportChecker: ShakeSupportChecker,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         RoundUiState(isShakeSupported = shakeSupportChecker.isShakeSupported()),
@@ -76,17 +73,25 @@ class RoundViewModel(
 
     fun refreshFromPersistence() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { current ->
+                current.copy(
+                    isLoading = current.activeRound != null,
+                    error = null,
+                )
+            }
             roundCoordinator.restoreActiveRound()
                 .onSuccess { result ->
-                    updateFromResult(result)
+                    updateFromResult(
+                        result = result,
+                        preserveSummaryWhenResultEmpty = true,
+                    )
                 }
                 .onFailure { throwable ->
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { current ->
+                        current.copy(
                             isLoading = false,
                             activeRound = null,
-                            summary = null,
+                            summary = current.summary,
                             error = mapError(throwable, PartyGameError.ROUND_RESTORE_FAILED),
                         )
                     }
@@ -162,12 +167,19 @@ class RoundViewModel(
         result: io.github.offlinepartygame.domain.model.RoundProgressResult,
         infoMessage: PartyGameError? = null,
         triggerFeedback: Boolean = false,
+        preserveSummaryWhenResultEmpty: Boolean = false,
     ) {
         _uiState.update { current ->
+            val shouldPreserveSummary = preserveSummaryWhenResultEmpty &&
+                current.summary != null &&
+                current.activeRound == null &&
+                result.activeRound == null &&
+                result.summary == null
+
             current.copy(
                 isLoading = false,
                 activeRound = result.activeRound,
-                summary = result.summary,
+                summary = if (shouldPreserveSummary) current.summary else result.summary,
                 error = null,
                 infoMessage = infoMessage ?: result.warning,
                 currentTimeMillis = System.currentTimeMillis(),
