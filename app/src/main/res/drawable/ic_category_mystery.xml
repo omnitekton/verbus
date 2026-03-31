@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+
+    <!-- Yellow rounded plate -->
+    <path
+        android:fillColor="#F4A61C"
+        android:pathData="M44,20 H212 A24,24 0 0 1 236,44 V212 A24,24 0 0 1 212,236 H44 A24,24 0 0 1 20,212 V44 A24,24 0 0 1 44,20 Z"/>
+
+    <!-- Black outline -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M44,20 H212 A24,24 0 0 1 236,44 V212 A24,24 0 0 1 212,236 H44 A24,24 0 0 1 20,212 V44 A24,24 0 0 1 44,20 Z"
+        android:strokeColor="#111111"
+        android:strokeWidth="10"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"/>
+
+    <!-- Corner bolts / dots -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,44 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+    <path
+        android:fillColor="#111111"
+        android:pathData="M202,44 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+    <path
+        android:fillColor="#111111"
+        android:pathData="M54,192 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+    <path
+        android:fillColor="#111111"
+        android:pathData="M202,192 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"/>
+
+    <!-- Question mark -->
+    <path
+        android:fillColor="#A63B24"
+        android:pathData="M96,52
+                          H168
+                          C181,52 192,63 192,76
+                          V132
+                          C192,145 181,156 168,156
+                          H152
+                          C145,156 140,161 140,168
+                          V188
+                          C140,194 135,199 129,199
+                          H111
+                          C105,199 100,194 100,188
+                          V152
+                          C100,139 111,128 124,128
+                          H140
+                          C147,128 152,123 152,116
+                          V92
+                          C152,85 147,80 140,80
+                          H112
+                          C105,80 100,85 100,92
+                          V112
+                          C100,118 95,123 89,123
+                          H73
+                          C67,123 62,118 62,112
+                          V86
+                          C62,67 77,52 96,52 Z"/>
+
+    <!-- Question mark bottom dot -->
+    <path
+        android:fillColor="#A63B24"
+        android:pathData="M110,206
+                          H130
+                          C136,206 141,211 141,217
+                          V233
+                          C141,239 136,244 130,244
+                          H110
+                          C104,244 99,239 99,233
+                          V217
+                          C99,211 104,206 110,206 Z"/>
+
+</vector>

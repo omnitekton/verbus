@@ -1,0 +1,25 @@
+# stable_id|polish text|english text
+animal_001|Żyrafa|Giraffe
+animal_002|Słoń|Elephant
+animal_003|Tygrys|Tiger
+animal_004|Lew|Lion
+animal_005|Rekin|Shark
+animal_006|Delfin|Dolphin
+animal_007|Panda|Panda
+animal_008|Kameleon|Chameleon
+animal_009|Pingwin|Penguin
+animal_010|Orzeł|Eagle
+animal_011|Wilk|Wolf
+animal_012|Lis|Fox
+animal_013|Koń morski|Seahorse
+animal_014|Niedźwiedź polarny|Polar bear
+animal_015|Hipopotam|Hippopotamus
+animal_016|Kangur|Kangaroo
+animal_017|Sowa|Owl
+animal_018|Bóbr|Beaver
+animal_019|Mrówka|Ant
+animal_020|Pająk|Spider
+animal_021|Ośmiornica|Octopus
+animal_022|Koala|Koala
+animal_023|Żółw|Turtle
+animal_024|Wiewiórka|Squirrel

@@ -1,0 +1,25 @@
+# stable_id|polish text|english text
+car_001|Ferrari|Ferrari
+car_002|Samochód elektryczny|Electric car
+car_003|Kabriolet|Convertible
+car_004|Silnik V8|V8 engine
+car_005|Rajdowy samochód|Rally car
+car_006|Limuzyna|Limousine
+car_007|Samochód terenowy|Off-road vehicle
+car_008|Taksówka|Taxi
+car_009|Radiowóz|Police car
+car_010|Ambulans|Ambulance
+car_011|Autobus miejski|City bus
+car_012|Ciężarówka|Truck
+car_013|Pickup|Pickup truck
+car_014|Hybryda|Hybrid car
+car_015|Samochód autonomiczny|Self-driving car
+car_016|Paliwo diesel|Diesel fuel
+car_017|Samochód sportowy|Sports car
+car_018|Minivan|Minivan
+car_019|Kombi|Station wagon
+car_020|Sedan|Sedan
+car_021|SUV|SUV
+car_022|Stacja ładowania|Charging station
+car_023|Skrzynia biegów|Gearbox
+car_024|Hamulec ręczny|Handbrake

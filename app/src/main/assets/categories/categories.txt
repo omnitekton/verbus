@@ -1,0 +1,3 @@
+# category_id|file_name|polish name|english name|optional drawable resource name
+cars|cars.txt|Samochody|Cars|ic_category_cars
+animals|animals.txt|Zwierzęta|Animals|ic_category_animals
