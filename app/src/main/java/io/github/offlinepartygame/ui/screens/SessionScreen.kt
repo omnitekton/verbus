@@ -32,7 +32,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -87,6 +86,8 @@ import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.automirrored.rounded.Redo
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.luminance
 
 @Composable
 fun SessionScreen(
@@ -308,6 +309,22 @@ private fun ActiveRoundContent(
             )
         }
     }
+}
+
+@Composable
+private fun gameplayTextShadow(): Shadow {
+    val textColor = MaterialTheme.colorScheme.onBackground
+    val shadowColor = if (textColor.luminance() > 0.5f) {
+        Color.Black.copy(alpha = 0.34f)
+    } else {
+        Color.White.copy(alpha = 0.22f)
+    }
+
+    return Shadow(
+        color = shadowColor,
+        offset = Offset(0f, 4f),
+        blurRadius = 10f,
+    )
 }
 
 @Composable
@@ -619,7 +636,9 @@ private fun RoundPhaseBody(
                 ) {
                     Text(
                         text = stringResource(id = R.string.countdown_title),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            shadow = gameplayTextShadow(),
+                        ),
                         textAlign = TextAlign.Center,
                     )
                     Text(
@@ -658,13 +677,17 @@ private fun RoundPhaseBody(
                 ) {
                     Text(
                         text = stringResource(id = R.string.time_up_title),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            shadow = gameplayTextShadow(),
+                        ),
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
                     )
                     Text(
                         text = round.currentTopic.displayText(languageCode),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            shadow = gameplayTextShadow(),
+                        ),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                     )
@@ -753,6 +776,9 @@ private fun TopicPhaseLayout(
                     lineHeight = topicLineHeight,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.displayMedium.copy(
+                        shadow = gameplayTextShadow(),
+                    ),
                     modifier = Modifier
                         .fillMaxWidth(if (isLandscape) 0.9f else 1f)
                         .widthIn(max = if (isLandscape) 960.dp else 760.dp)
@@ -953,7 +979,9 @@ private fun PortraitSummaryLayout(
     ) {
         Text(
             text = stringResource(id = R.string.summary_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineLarge.copy(
+                shadow = gameplayTextShadow(),
+            ),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -1036,7 +1064,9 @@ private fun LandscapeSummaryLayout(
     ) {
         Text(
             text = stringResource(id = R.string.summary_title),
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                shadow = gameplayTextShadow(),
+            ),
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -1376,10 +1406,28 @@ private fun CompletionOverlay() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(text = "✓", fontSize = 110.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            Text(
+                text = "✓",
+                fontSize = 110.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White,
+                style = MaterialTheme.typography.displayLarge.copy(
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.30f),
+                        offset = Offset(0f, 4f),
+                        blurRadius = 10f,
+                    ),
+                ),
+            )
             Text(
                 text = stringResource(id = R.string.completed_overlay_title),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.30f),
+                        offset = Offset(0f, 4f),
+                        blurRadius = 10f,
+                    ),
+                ),
                 color = Color.White,
             )
         }
