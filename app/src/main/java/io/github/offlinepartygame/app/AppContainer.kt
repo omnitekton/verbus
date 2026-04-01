@@ -8,9 +8,7 @@ import io.github.offlinepartygame.data.local.AppDatabase
 import io.github.offlinepartygame.data.preferences.SettingsRepositoryImpl
 import io.github.offlinepartygame.data.repository.ActiveRoundRepositoryImpl
 import io.github.offlinepartygame.data.repository.HistoryRepositoryImpl
-import io.github.offlinepartygame.domain.service.RandomProvider
 import io.github.offlinepartygame.domain.service.RoundCoordinator
-import io.github.offlinepartygame.domain.service.TimeProvider
 import io.github.offlinepartygame.domain.service.TopicSelector
 import kotlin.random.Random
 
@@ -21,7 +19,7 @@ class AppContainer(
 
     private val database: AppDatabase by lazy {
         Room.databaseBuilder(appContext, AppDatabase::class.java, "party_game.db")
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 
@@ -36,7 +34,7 @@ class AppContainer(
     val soundPlayer = ProceduralSoundPlayer()
 
     private val topicSelector = TopicSelector(
-        randomProvider = RandomProvider { until -> Random.nextInt(until) },
+        randomProvider = { until -> Random.nextInt(until) },
     )
 
     val roundCoordinator = RoundCoordinator(
@@ -44,6 +42,6 @@ class AppContainer(
         historyRepository = historyRepository,
         activeRoundRepository = activeRoundRepository,
         topicSelector = topicSelector,
-        timeProvider = TimeProvider { System.currentTimeMillis() },
+        timeProvider = { System.currentTimeMillis() },
     )
 }

@@ -187,9 +187,6 @@ class RoundCoordinator(
         }
     }
 
-    suspend fun clearActiveRound() = mutex.withLock {
-        activeRoundRepository.clearActiveRound()
-    }
 
     private suspend fun advanceExpiredPhases(
         round: ActiveRound,

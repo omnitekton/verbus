@@ -4,11 +4,12 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -29,6 +30,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.offlinepartygame.R
@@ -71,25 +73,67 @@ fun SelectionCard(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(),
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(20.dp),
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize(),
         ) {
-            CategoryPreviewSlot(imageResId = imageResId)
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            subtitle?.takeIf { it.isNotBlank() }?.let {
+            val ultraCompact = maxHeight < 118.dp || maxWidth < 150.dp
+            val compact = ultraCompact || maxHeight < 152.dp || maxWidth < 184.dp
+            val padding = when {
+                ultraCompact -> 10.dp
+                compact -> 14.dp
+                else -> 20.dp
+            }
+            val spacing = when {
+                ultraCompact -> 6.dp
+                compact -> 8.dp
+                else -> 12.dp
+            }
+            val previewHeight = when {
+                subtitle.isNullOrBlank() && ultraCompact -> 38.dp
+                subtitle.isNullOrBlank() && compact -> 52.dp
+                subtitle.isNullOrBlank() -> 88.dp
+                ultraCompact -> 42.dp
+                compact -> 56.dp
+                else -> 92.dp
+            }
+            val titleStyle = when {
+                ultraCompact -> MaterialTheme.typography.titleSmall
+                compact -> MaterialTheme.typography.titleMedium
+                else -> MaterialTheme.typography.titleLarge
+            }
+            val subtitleStyle = when {
+                ultraCompact -> MaterialTheme.typography.bodySmall
+                compact -> MaterialTheme.typography.bodySmall
+                else -> MaterialTheme.typography.bodyMedium
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(spacing, alignment = Alignment.CenterVertically),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = padding, vertical = padding),
+            ) {
+                CategoryPreviewSlot(
+                    imageResId = imageResId,
+                    height = previewHeight,
+                )
                 Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = title,
+                    style = titleStyle,
                     textAlign = TextAlign.Center,
+                    maxLines = if (compact) 2 else 3,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                subtitle?.takeIf { it.isNotBlank() }?.let {
+                    Text(
+                        text = it,
+                        style = subtitleStyle,
+                        textAlign = TextAlign.Center,
+                        maxLines = if (compact) 3 else 4,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -98,14 +142,14 @@ fun SelectionCard(
 @Composable
 private fun CategoryPreviewSlot(
     @DrawableRes imageResId: Int?,
+    height: Dp,
 ) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 92.dp)
-            .aspectRatio(3f)
-            .padding(horizontal = 12.dp),
+            .height(height)
+            .padding(horizontal = 8.dp),
     ) {
         if (imageResId != null) {
             Image(
@@ -117,15 +161,7 @@ private fun CategoryPreviewSlot(
                 } else {
                     null
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 88.dp),
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 88.dp),
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
@@ -138,6 +174,37 @@ private fun isMonochromeVector(@DrawableRes imageResId: Int): Boolean = imageRes
     R.drawable.ic_category_science,
     R.drawable.ic_mode_storytelling,
 )
+
+fun calculateSelectionCardHeight(
+    availableWidth: Dp,
+    availableHeight: Dp,
+    itemCount: Int,
+    columns: Int,
+    isLandscape: Boolean,
+    horizontalPadding: Dp,
+    verticalPadding: Dp,
+    horizontalSpacing: Dp,
+    verticalSpacing: Dp,
+    maxVisibleRowsPortrait: Int,
+    maxVisibleRowsLandscape: Int,
+    minHeight: Dp,
+    maxHeight: Dp,
+    widthToHeightRatio: Float,
+): Dp {
+    val safeItemCount = itemCount.coerceAtLeast(1)
+    val safeColumns = columns.coerceAtLeast(1)
+    val totalHorizontalSpacing = horizontalSpacing * (safeColumns - 1)
+    val cellWidth = (availableWidth - horizontalPadding - totalHorizontalSpacing) / safeColumns
+    val rowsNeeded = ((safeItemCount + safeColumns - 1) / safeColumns).coerceAtLeast(1)
+    val visibleRows = minOf(
+        rowsNeeded,
+        if (isLandscape) maxVisibleRowsLandscape else maxVisibleRowsPortrait,
+    ).coerceAtLeast(1)
+    val totalVerticalSpacing = verticalSpacing * (visibleRows - 1)
+    val heightFromViewport = (availableHeight - verticalPadding - totalVerticalSpacing) / visibleRows
+    val heightFromWidth = cellWidth * widthToHeightRatio
+    return minOf(heightFromViewport, heightFromWidth).coerceIn(minHeight, maxHeight)
+}
 
 @Composable
 fun StepSettingCard(

@@ -1,14 +1,22 @@
 package io.github.offlinepartygame.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -18,8 +26,15 @@ import io.github.offlinepartygame.domain.model.PartyGameError
 import io.github.offlinepartygame.ui.components.MenuActionButton
 import io.github.offlinepartygame.ui.components.ScreenScaffold
 import io.github.offlinepartygame.ui.components.SelectionCard
+import io.github.offlinepartygame.ui.components.calculateSelectionCardHeight
 import io.github.offlinepartygame.ui.currentLanguageCode
 import io.github.offlinepartygame.ui.viewmodel.CatalogUiState
+
+private val SelectionColumns = 2
+private val SelectionHorizontalSpacing = 14.dp
+private val SelectionVerticalSpacing = 14.dp
+private val SelectionHorizontalPadding = 32.dp
+private val SelectionVerticalPadding = 40.dp
 
 @Composable
 fun CategorySelectionScreen(
@@ -36,60 +51,92 @@ fun CategorySelectionScreen(
         backLabel = stringResource(id = R.string.action_back),
         onBack = onBack,
     ) { padding ->
-        LazyColumn(
-            contentPadding = PaddingValues(
+        BoxWithConstraints(
+            modifier = modifier.fillMaxSize(),
+        ) {
+            val isLandscape = maxWidth > maxHeight
+            val gridPadding = PaddingValues(
                 start = 16.dp,
                 top = padding.calculateTopPadding() + 16.dp,
                 end = 16.dp,
                 bottom = padding.calculateBottomPadding() + 24.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = modifier,
-        ) {
-            when {
-                uiState.isLoading -> {
-                    item {
-                        androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxWidth()) {
-                            CircularProgressIndicator()
+            )
+            val viewportHeight = maxHeight - padding.calculateTopPadding() - padding.calculateBottomPadding()
+            val cardHeight = calculateSelectionCardHeight(
+                availableWidth = maxWidth,
+                availableHeight = viewportHeight,
+                itemCount = uiState.categories.size.coerceAtLeast(1),
+                columns = SelectionColumns,
+                isLandscape = isLandscape,
+                horizontalPadding = SelectionHorizontalPadding,
+                verticalPadding = SelectionVerticalPadding,
+                horizontalSpacing = SelectionHorizontalSpacing,
+                verticalSpacing = SelectionVerticalSpacing,
+                maxVisibleRowsPortrait = 4,
+                maxVisibleRowsLandscape = 2,
+                minHeight = 108.dp,
+                maxHeight = 196.dp,
+                widthToHeightRatio = 0.84f,
+            )
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(SelectionColumns),
+                contentPadding = gridPadding,
+                horizontalArrangement = Arrangement.spacedBy(SelectionHorizontalSpacing),
+                verticalArrangement = Arrangement.spacedBy(SelectionVerticalSpacing),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 32.dp),
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
-                }
 
-                uiState.categories.isEmpty() -> {
-                    item {
-                        Text(
-                            text = if (uiState.error != null) errorMessage(uiState.error) else stringResource(id = R.string.catalog_empty_message),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    item {
-                        MenuActionButton(
-                            text = stringResource(id = R.string.catalog_retry),
-                            onClick = onReload,
-                        )
-                    }
-                }
-
-                else -> {
-                    if (uiState.hasHiddenCategories) {
-                        item {
+                    uiState.categories.isEmpty() -> {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Text(
-                                text = stringResource(id = R.string.catalog_warning_hidden_categories),
-                                style = MaterialTheme.typography.bodyMedium,
+                                text = if (uiState.error != null) errorMessage(uiState.error) else stringResource(id = R.string.catalog_empty_message),
+                                style = MaterialTheme.typography.bodyLarge,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            MenuActionButton(
+                                text = stringResource(id = R.string.catalog_retry),
+                                onClick = onReload,
+                            )
+                        }
                     }
 
-                    items(uiState.categories, key = { it.id }) { category ->
-                        SelectionCard(
-                            title = category.displayName(languageCode),
-                            imageResName = category.imageResName,
-                            onClick = { onCategorySelected(category.id) },
-                        )
+                    else -> {
+                        if (uiState.hasHiddenCategories) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                Text(
+                                    text = stringResource(id = R.string.catalog_warning_hidden_categories),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                        }
+
+                        items(uiState.categories, key = { it.id }) { category ->
+                            SelectionCard(
+                                title = category.displayName(languageCode),
+                                imageResName = category.imageResName,
+                                onClick = { onCategorySelected(category.id) },
+                                modifier = Modifier.height(cardHeight),
+                            )
+                        }
                     }
                 }
             }
