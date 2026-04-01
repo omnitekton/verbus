@@ -1,0 +1,193 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "ec7256ef620e8e517e572638fd7cbf2a",
+    "entities": [
+      {
+        "tableName": "topic_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`categoryId` TEXT NOT NULL, `topicId` TEXT NOT NULL, `shownAtMillis` INTEGER NOT NULL, PRIMARY KEY(`categoryId`, `topicId`, `shownAtMillis`))",
+        "fields": [
+          {
+            "fieldPath": "categoryId",
+            "columnName": "categoryId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "topicId",
+            "columnName": "topicId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shownAtMillis",
+            "columnName": "shownAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "categoryId",
+            "topicId",
+            "shownAtMillis"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_topic_history_categoryId_shownAtMillis",
+            "unique": false,
+            "columnNames": [
+              "categoryId",
+              "shownAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_topic_history_categoryId_shownAtMillis` ON `${TABLE_NAME}` (`categoryId`, `shownAtMillis`)"
+          },
+          {
+            "name": "index_topic_history_categoryId_topicId",
+            "unique": false,
+            "columnNames": [
+              "categoryId",
+              "topicId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_topic_history_categoryId_topicId` ON `${TABLE_NAME}` (`categoryId`, `topicId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "active_round",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `modeId` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `categoryNamePl` TEXT NOT NULL, `categoryNameEn` TEXT NOT NULL, `totalTopics` INTEGER NOT NULL, `topicDurationSec` INTEGER NOT NULL, `countdownDurationSec` INTEGER NOT NULL, `timeoutDurationSec` INTEGER NOT NULL, `completedCount` INTEGER NOT NULL, `timedOutCount` INTEGER NOT NULL, `skippedCount` INTEGER NOT NULL, `phase` TEXT NOT NULL, `phaseStartedAtMillis` INTEGER NOT NULL, `phaseEndsAtMillis` INTEGER NOT NULL, `currentTopicId` TEXT NOT NULL, `currentTopicTextPl` TEXT NOT NULL, `currentTopicTextEn` TEXT NOT NULL, `shownTopicIdsCsv` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modeId",
+            "columnName": "modeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryId",
+            "columnName": "categoryId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryNamePl",
+            "columnName": "categoryNamePl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryNameEn",
+            "columnName": "categoryNameEn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalTopics",
+            "columnName": "totalTopics",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "topicDurationSec",
+            "columnName": "topicDurationSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "countdownDurationSec",
+            "columnName": "countdownDurationSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeoutDurationSec",
+            "columnName": "timeoutDurationSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedCount",
+            "columnName": "completedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timedOutCount",
+            "columnName": "timedOutCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skippedCount",
+            "columnName": "skippedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phaseStartedAtMillis",
+            "columnName": "phaseStartedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phaseEndsAtMillis",
+            "columnName": "phaseEndsAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentTopicId",
+            "columnName": "currentTopicId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentTopicTextPl",
+            "columnName": "currentTopicTextPl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentTopicTextEn",
+            "columnName": "currentTopicTextEn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shownTopicIdsCsv",
+            "columnName": "shownTopicIdsCsv",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ec7256ef620e8e517e572638fd7cbf2a')"
+    ]
+  }
+}
