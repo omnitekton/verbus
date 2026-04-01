@@ -53,7 +53,8 @@ fun PartyGameApp(
 
     AppResumeEffect(onResumed = roundViewModel::onAppResumed)
 
-    LaunchedEffect(optionsState.settings.language) {
+    LaunchedEffect(optionsState.isLoaded, optionsState.settings.language) {
+        if (!optionsState.isLoaded) return@LaunchedEffect
         AppLocaleController.applyLanguage(optionsState.settings.language)
     }
 

@@ -6,11 +6,15 @@ import io.github.offlinepartygame.domain.model.AppLanguage
 
 object AppLocaleController {
     fun applyLanguage(language: AppLanguage) {
-        val locales = when (language) {
+        val target = when (language) {
             AppLanguage.SYSTEM -> LocaleListCompat.getEmptyLocaleList()
             AppLanguage.POLISH -> LocaleListCompat.forLanguageTags("pl")
             AppLanguage.ENGLISH -> LocaleListCompat.forLanguageTags("en")
         }
-        AppCompatDelegate.setApplicationLocales(locales)
+
+        val current = AppCompatDelegate.getApplicationLocales()
+        if (current.toLanguageTags() == target.toLanguageTags()) return
+
+        AppCompatDelegate.setApplicationLocales(target)
     }
 }

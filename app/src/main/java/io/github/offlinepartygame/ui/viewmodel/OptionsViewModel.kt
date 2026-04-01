@@ -18,11 +18,12 @@ import kotlinx.coroutines.launch
 data class OptionsUiState(
     val settings: AppSettings = AppSettings(),
     val isShakeSupported: Boolean = true,
+    val isLoaded: Boolean = false,
 )
 
 class OptionsViewModel(
     private val settingsRepository: SettingsRepository,
-    private val shakeSupportChecker: ShakeSupportChecker,
+    shakeSupportChecker: ShakeSupportChecker,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         OptionsUiState(isShakeSupported = shakeSupportChecker.isShakeSupported()),
@@ -33,7 +34,10 @@ class OptionsViewModel(
         viewModelScope.launch {
             settingsRepository.settingsFlow.collect { settings ->
                 _uiState.update { current ->
-                    current.copy(settings = settings)
+                    current.copy(
+                        settings = settings,
+                        isLoaded = true,
+                    )
                 }
             }
         }
