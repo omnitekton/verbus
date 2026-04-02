@@ -1,5 +1,7 @@
-# category_id|file_name|polish name|english name|optional drawable resource name
+# category_id|file_name|polish name|english name|drawable resource name
 cars|cars.txt|Samochody|Cars|ic_category_cars
 animals|animals.txt|Zwierzęta|Animals|ic_category_animals
 science|science.txt|Nauka|Science|ic_category_science
 food|food.txt|Jedzenie|Food|ic_category_food
+plus18|plus18.txt|+18|18+|ic_category_plus18
+memes|memes.txt|Memy|Memes|ic_category_memes

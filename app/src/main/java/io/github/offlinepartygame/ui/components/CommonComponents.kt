@@ -172,6 +172,9 @@ private fun isMonochromeVector(@DrawableRes imageResId: Int): Boolean = imageRes
     R.drawable.ic_category_cars,
     R.drawable.ic_category_food,
     R.drawable.ic_category_science,
+    R.drawable.ic_category_mystery,
+    R.drawable.ic_category_plus18,
+    R.drawable.ic_category_memes,
     R.drawable.ic_mode_storytelling,
 )
 
@@ -350,5 +353,7 @@ private val previewDrawableMap = mapOf(
     "ic_category_food" to R.drawable.ic_category_food,
     "ic_category_mystery" to R.drawable.ic_category_mystery,
     "ic_category_science" to R.drawable.ic_category_science,
+    "ic_category_plus18" to R.drawable.ic_category_plus18,
+    "ic_category_memes" to R.drawable.ic_category_memes,
     "ic_mode_storytelling" to R.drawable.ic_mode_storytelling,
 )

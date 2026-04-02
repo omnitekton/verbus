@@ -1,0 +1,30 @@
+adult_001|Flirt w pracy|Office flirt
+adult_002|Namiętny pocałunek|Passionate kiss
+adult_003|Randka w ciemno|Blind date
+adult_004|Zakazany romans|Forbidden romance
+adult_005|Tajemniczy wielbiciel|Secret admirer
+adult_006|Wieczór kawalerski|Bachelor party
+adult_007|Wieczór panieński|Bachelorette party
+adult_008|Gra w butelkę|Spin the bottle
+adult_009|Pikantne wyznanie|Spicy confession
+adult_010|Miłosny trójkąt|Love triangle
+adult_011|Sekretna randka|Secret date
+adult_012|Podryw w barze|Picking someone up at a bar
+adult_013|Hotel na godziny|Hourly hotel
+adult_014|Poranek po imprezie|The morning after a party
+adult_015|Czerwona bielizna|Red lingerie
+adult_016|Kajdanki z futerkiem|Fuzzy handcuffs
+adult_017|Szampan i truskawki|Champagne and strawberries
+adult_018|Prezerwatywa|Condom
+adult_019|Lubrykant|Lubricant
+adult_020|Afrodyzjak|Aphrodisiac
+adult_021|Seksowny taniec|Sexy dance
+adult_022|Striptiz|Striptease
+adult_023|Pocałunek z języczkiem|French kiss
+adult_024|Sexting|Sexting
+adult_025|Przyłapanie na gorącym uczynku|Caught in the act
+adult_026|Friendzone|Friendzone
+adult_027|Zazdrość partnera|Partner jealousy
+adult_028|Noc poślubna|Wedding night
+adult_029|Miłosny list|Love letter
+adult_030|Łóżko wodne|Waterbed
