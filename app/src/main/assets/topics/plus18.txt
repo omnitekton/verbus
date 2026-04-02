@@ -28,3 +28,43 @@ adult_027|Zazdrość partnera|Partner jealousy
 adult_028|Noc poślubna|Wedding night
 adult_029|Miłosny list|Love letter
 adult_030|Łóżko wodne|Waterbed
+adult_031|Nasutniki|Oral feeders
+adult_032|Szwedzki stół z niespodzianką|Swedish buffet with surprise
+adult_033|Młynek do pieprzu|Pepper grinder
+adult_034|Nurek w kwaśnej śmietanie|Diver in sour cream
+adult_035|Dzwonek do windy na haśle|Elevator bell with password
+adult_036|Małpka z granatem|Monkey with a grenade
+adult_037|Góralski prysznic|Highlander shower
+adult_038|Dmuchany fortepian|Inflatable piano
+adult_039|Klaps z doklejką|Spank with an extra slap
+adult_040|Zaspany hydraulik|Sleepy plumber
+adult_041|Tartak z akompaniamentem|Sawmill with accompaniment
+adult_042|Mrożona kawa po turecku|Frozen Turkish coffee
+adult_043|Króliki z gołym drutem|Rabbits with bare wire
+adult_044|Francuskie tornado|French tornado
+adult_045|Pijany sternik na fali|Drunk helmsman on a wave
+adult_046|Wiertarka udarowa na mokro|Wet hammer drill
+adult_047|Kukułka z pieprzem|Cuckoo with pepper
+adult_048|Płetwonurek w syropie klonowym|Scuba diver in maple syrup
+adult_049|Kosiarka z podwójnym nożem|Lawnmower with double blade
+adult_050|Rozgrzany korek od szampana|Hot champagne cork
+adult_051|Ślepy kaletnik z młotkiem|Blind bag maker with a hammer
+adult_052|Pipeta z drutem kolczastym|Pipette with barbed wire
+adult_053|Dzwonnik z Notre Dame na amfetaminie|Hunchback of Notre Dame on speed
+adult_054|Myjka ciśnieniowa w bibliotece|Pressure washer in a library
+adult_055|Pijany kominiarz na drabinie|Drunk chimney sweeper on a ladder
+adult_056|Trzmiel w słoiku z miodem|Bumblebee in a honey jar
+adult_057|Saper na mokrych klockach|Sapper on wet blocks
+adult_058|Rozjuszony kret w wannie z galaretką|Furious mole in a jelly bath
+adult_059|Elektryczna szczotka do kibla|Electric toilet brush
+adult_060|Głodny kaczor w dmuchanym zamku|Hungry drake in a bouncy castle
+adult_061|Dmuchawiec z pieprzniczką|Dandelion with pepper shaker
+adult_062|Zepsuta lokomotywa z golfem|Broken locomotive with a golf club
+adult_063|Niewidomy saper z wibratorem|Blind sapper with a vibrator
+adult_064|Mrożona pizza na sterydach|Frozen pizza on steroids
+adult_065|Rozpędzony bobas z pieluchą|Speeding baby with a diaper
+adult_066|Korek od wanny z żyletką|Bathtub plug with a razor blade
+adult_067|Przesiąknięty jogą hipopotam|Yoga-soaked hippopotamus
+adult_068|Pijany szewc z szydełkiem|Drunk shoemaker with a crochet hook
+adult_069|Parasolka z lodem i bicem|Umbrella with ice and a whip
+adult_070|Kosmita w galarecie z ogórkiem|Alien in jelly with a cucumber
