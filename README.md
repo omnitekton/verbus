@@ -1,30 +1,30 @@
 # Verbus
 
-Verbus is an offline Android party game built with Kotlin and Jetpack Compose.
+Verbus is an offline Android word guessing game built with Kotlin and Jetpack Compose.
 
 License: **MIT**. See [LICENSE](LICENSE).
 
 ## Screenshots
 
 <p align="center">
-  <img src="./screenshots/Screenshot_20260402_191417.png" alt="Menu" width="160">
+  <img src="./screenshots/Screenshot_20260402_191417.png" alt="Main menu" width="160">
   <img src="./screenshots/Screenshot_20260402_191428.png" alt="Game modes" width="160">
   <img src="./screenshots/Screenshot_20260402_191432.png" alt="Categories" width="160">
-  <img src="./screenshots/Screenshot_20260402_193823.png" alt="Categories" width="160">
+  <img src="./screenshots/Screenshot_20260402_193823.png" alt="Options" width="160">
 </p>
 
 <p align="center">
-  <img src="./screenshots/Screenshot_20260402_191452.png" alt="Game" width="320">
-  <img src="./screenshots/Screenshot_20260402_191508.png" alt="Summary" width="320">
+  <img src="./screenshots/Screenshot_20260402_191452.png" alt="Gameplay" width="320">
+  <img src="./screenshots/Screenshot_20260402_191508.png" alt="Round summary" width="320">
 </p>
 
-## What is in the repo right now
+## Current state
 
 - one playable mode: **Storytelling / Opowiadanie**
 - built-in categories: **Cars**, **Animals**, **Science**, **Food**, **Memes**, **+18**
 - offline-only content loaded from `assets/`
 - settings stored in DataStore
-- active round + topic history stored in Room
+- active round state and topic history stored in Room
 - UI languages: Polish and English
 
 ## Build
@@ -43,7 +43,7 @@ Commands:
 
 Minimum Android version: **API 26**.
 
-## Where the editable content lives
+## Editable content
 
 ### Categories index
 
@@ -55,7 +55,7 @@ Format:
 category_id|file_name|polish name|english name|optional drawable resource name
 ```
 
-Current example:
+Example:
 
 ```text
 cars|cars.txt|Samochody|Cars|ic_category_cars
@@ -94,12 +94,12 @@ movies|movies.txt|Filmy|Movies|ic_category_movies
 ```
 
 4. If the category should have an icon:
-  - add the drawable to `app/src/main/res/drawable/`
-  - register it in `previewDrawableMap` in `app/src/main/java/io/github/verbus/ui/components/CommonComponents.kt`
-  - if it is a monochrome vector that should follow theme tinting, also add it to `isMonochromeVector(...)` in the same file
+   - add the drawable to `app/src/main/res/drawable/`
+   - register it in `previewDrawableMap` in `app/src/main/java/io/github/verbus/ui/components/CommonComponents.kt`
+   - if it is a monochrome vector that should follow theme tinting, also add it to `isMonochromeVector(...)` in the same file
 5. Rebuild the app.
 
-Without the `CommonComponents.kt` mapping, the drawable name from `categories.txt` will not be shown in UI.
+Without the `CommonComponents.kt` mapping, the drawable name from `categories.txt` will not be shown in the UI.
 
 ## How to add topics to an existing category
 
@@ -122,7 +122,7 @@ Rules:
 - a category is not playable if its topic file is missing or if no valid topics remain after parsing
 - a category with fewer than 5 valid topics still works, but logs a warning
 
-## Other files you may need to touch
+## Other files you may need to edit
 
 ### UI translations
 
@@ -139,4 +139,4 @@ Rules:
 
 - Topic history is used to reduce repeats between rounds.
 - The current repeat block window is 8 hours.
-- Active round state is restored after app resume/relaunch.
+- Active round state is restored after app resume or relaunch.
