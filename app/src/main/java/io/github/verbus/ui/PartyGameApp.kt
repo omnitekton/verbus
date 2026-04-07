@@ -25,7 +25,7 @@ import io.github.verbus.ui.screens.MainMenuScreen
 import io.github.verbus.ui.screens.ModeSelectionScreen
 import io.github.verbus.ui.screens.OptionsScreen
 import io.github.verbus.ui.screens.SessionScreen
-import io.github.verbus.ui.theme.OfflinePartyGameTheme
+import io.github.verbus.ui.theme.VerbusTheme
 import io.github.verbus.ui.viewmodel.CatalogViewModel
 import io.github.verbus.ui.viewmodel.OptionsViewModel
 import io.github.verbus.ui.viewmodel.RoundViewModel
@@ -64,7 +64,7 @@ fun PartyGameApp(
         }
     }
 
-    OfflinePartyGameTheme(settings = optionsState.settings) {
+    VerbusTheme(settings = optionsState.settings) {
         NavHost(navController = navController, startDestination = ROUTE_MENU) {
             composable(ROUTE_MENU) {
                 MainMenuScreen(

@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.luminance
 import io.github.verbus.domain.model.AppSettings
 
 @Composable
-fun OfflinePartyGameTheme(
+fun VerbusTheme(
     settings: AppSettings = AppSettings(),
     content: @Composable () -> Unit,
 ) {

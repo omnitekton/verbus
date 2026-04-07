@@ -95,7 +95,7 @@ movies|movies.txt|Filmy|Movies|ic_category_movies
 
 4. If the category should have an icon:
   - add the drawable to `app/src/main/res/drawable/`
-  - register it in `previewDrawableMap` in `app/src/main/java/io/github/offlinepartygame/ui/components/CommonComponents.kt`
+  - register it in `previewDrawableMap` in `app/src/main/java/io/github/verbus/ui/components/CommonComponents.kt`
   - if it is a monochrome vector that should follow theme tinting, also add it to `isMonochromeVector(...)` in the same file
 5. Rebuild the app.
 
@@ -131,9 +131,9 @@ Rules:
 
 ### Main content-related code
 
-- `app/src/main/java/io/github/offlinepartygame/data/content/TopicFileParser.kt`
-- `app/src/main/java/io/github/offlinepartygame/data/content/AssetContentRepository.kt`
-- `app/src/main/java/io/github/offlinepartygame/ui/components/CommonComponents.kt`
+- `app/src/main/java/io/github/verbus/data/content/TopicFileParser.kt`
+- `app/src/main/java/io/github/verbus/data/content/AssetContentRepository.kt`
+- `app/src/main/java/io/github/verbus/ui/components/CommonComponents.kt`
 
 ## Notes
 
