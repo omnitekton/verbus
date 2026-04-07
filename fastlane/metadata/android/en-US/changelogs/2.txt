@@ -1,0 +1,5 @@
+Initial release.
+- Offline local word guessing gameplay
+- English and Polish language support
+- Category-based rounds
+- No account, no ads, no online requirement
