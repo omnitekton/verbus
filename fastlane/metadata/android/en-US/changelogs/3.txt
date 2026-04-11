@@ -1,0 +1,6 @@
+What's new:
+- Improved UI scaling on different devices
+- Better visual, sound, and touch feedback
+- More customization options
+- Stability and error-handling improvements
+- General gameplay and interface polish
