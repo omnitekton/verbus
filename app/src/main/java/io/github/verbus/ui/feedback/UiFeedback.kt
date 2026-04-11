@@ -69,11 +69,11 @@ fun rememberUiFeedbackController(): UiFeedbackController = LocalUiFeedbackContro
 
 @Stable
 interface UiFeedbackController {
-    fun onUiInteraction()
+    fun onUiInteraction(playSound: Boolean = true)
 }
 
 private object NoOpUiFeedbackController : UiFeedbackController {
-    override fun onUiInteraction() = Unit
+    override fun onUiInteraction(playSound: Boolean) = Unit
 }
 
 private class DefaultUiFeedbackController(
@@ -84,11 +84,11 @@ private class DefaultUiFeedbackController(
     private val touchHapticFeedbackEnabled: Boolean,
     private val touchSoundFeedbackEnabled: Boolean,
 ) : UiFeedbackController {
-    override fun onUiInteraction() {
+    override fun onUiInteraction(playSound: Boolean) {
         if (touchHapticFeedbackEnabled) {
             vibrateTap(context)
         }
-        if (soundsEnabled && touchSoundFeedbackEnabled) {
+        if (playSound && soundsEnabled && touchSoundFeedbackEnabled) {
             soundPlayer.play(
                 effect = SoundEffect.BUTTON_PRESS,
                 enabled = true,

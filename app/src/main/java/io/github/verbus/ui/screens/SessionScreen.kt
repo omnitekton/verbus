@@ -616,10 +616,8 @@ private fun PortraitCounterStatCell(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 92.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.CenterVertically),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
                     text = label,
@@ -1043,7 +1041,7 @@ private fun RoundTopicActionButtons(
             },
         ) {
             Button(
-                onClick = { feedback.onUiInteraction(); onSignalComplete() },
+                onClick = { feedback.onUiInteraction(playSound = false); onSignalComplete() },
                 colors = actionButtonColors,
                 modifier = Modifier
                     .weight(1f)
@@ -1057,7 +1055,7 @@ private fun RoundTopicActionButtons(
             }
 
             Button(
-                onClick = { feedback.onUiInteraction(); onSkipTopic() },
+                onClick = { feedback.onUiInteraction(playSound = false); onSkipTopic() },
                 colors = actionButtonColors,
                 modifier = Modifier
                     .weight(1f)
@@ -1072,7 +1070,7 @@ private fun RoundTopicActionButtons(
         }
     } else {
         Button(
-            onClick = { feedback.onUiInteraction(); onSkipTopic() },
+            onClick = { feedback.onUiInteraction(playSound = false); onSkipTopic() },
             colors = actionButtonColors,
             modifier = if (isLandscape) {
                 Modifier

@@ -11,8 +11,8 @@ enum class ThemeColorOption(
     COLOR3("C3", Color(0xFFFF9800)), // orange
     COLOR4("C4", Color(0xFFF44336)), // red
     COLOR5("C5", Color(0xFF4CAF50)), // green
-    COLOR6("C6", Color(0xFF00BCD4)), // cyan
-    COLOR7("C7", Color(0xFF2196F3)), // blue
+    COLOR6("C6", Color(0xFF0D47A1)), // navy blue
+    COLOR7("C7", Color(0xFF3F51B5)), // indigo
     COLOR8("C8", Color(0xFF9C27B0)), // purple
     COLOR9("C9", Color(0xFF616161)), // gray
     COLOR10("C10", Color(0xFF000000)); // black

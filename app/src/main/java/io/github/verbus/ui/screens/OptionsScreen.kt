@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -145,6 +147,8 @@ fun OptionsScreen(
                     valueText = themeColorLabel(uiState.settings.backgroundColorPrimary),
                     onPrevious = { onBackgroundColorPrimaryDelta(-1) },
                     onNext = { onBackgroundColorPrimaryDelta(1) },
+                    valueContainerColor = uiState.settings.backgroundColorPrimary.color,
+                    valueContentColor = contrastTextColor(uiState.settings.backgroundColorPrimary.color),
                 )
             }
             item {
@@ -153,6 +157,8 @@ fun OptionsScreen(
                     valueText = themeColorLabel(uiState.settings.backgroundColorSecondary),
                     onPrevious = { onBackgroundColorSecondaryDelta(-1) },
                     onNext = { onBackgroundColorSecondaryDelta(1) },
+                    valueContainerColor = uiState.settings.backgroundColorSecondary.color,
+                    valueContentColor = contrastTextColor(uiState.settings.backgroundColorSecondary.color),
                 )
             }
             item {
@@ -161,6 +167,8 @@ fun OptionsScreen(
                     valueText = themeColorLabel(uiState.settings.fontColor),
                     onPrevious = { onFontColorDelta(-1) },
                     onNext = { onFontColorDelta(1) },
+                    valueContainerColor = uiState.settings.fontColor.color,
+                    valueContentColor = contrastTextColor(uiState.settings.fontColor.color),
                 )
             }
             item {
@@ -169,6 +177,8 @@ fun OptionsScreen(
                     valueText = themeColorLabel(uiState.settings.accentColor),
                     onPrevious = { onAccentColorDelta(-1) },
                     onNext = { onAccentColorDelta(1) },
+                    valueContainerColor = uiState.settings.accentColor.color,
+                    valueContentColor = contrastTextColor(uiState.settings.accentColor.color),
                 )
             }
             item {
@@ -177,6 +187,8 @@ fun OptionsScreen(
                     valueText = themeColorLabel(uiState.settings.accentTextColor),
                     onPrevious = { onAccentTextColorDelta(-1) },
                     onNext = { onAccentTextColorDelta(1) },
+                    valueContainerColor = uiState.settings.accentTextColor.color,
+                    valueContentColor = contrastTextColor(uiState.settings.accentTextColor.color),
                 )
             }
             item {
@@ -341,3 +353,6 @@ private fun soundSetLabel(uiState: OptionsUiState): String {
     val selected = uiState.availableSoundSets.firstOrNull { it.id == uiState.settings.selectedSoundSetId }
     return selected?.displayName ?: stringResource(id = R.string.options_sound_set_builtin)
 }
+
+private fun contrastTextColor(background: Color): Color =
+    if (background.luminance() > 0.5f) Color.Black else Color.White

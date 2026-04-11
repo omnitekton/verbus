@@ -1,7 +1,7 @@
 package io.github.verbus.domain.model
 
 data class AppSettings(
-    val signalMethod: SignalMethod = SignalMethod.DOUBLE_TAP,
+    val signalMethod: SignalMethod = DEFAULT_SIGNAL_METHOD,
     val language: AppLanguage = AppLanguage.SYSTEM,
     val topicsPerRound: Int = DEFAULT_TOPICS_PER_ROUND,
     val topicDurationSec: Int = DEFAULT_TOPIC_DURATION_SEC,
@@ -31,16 +31,17 @@ data class AppSettings(
     )
 
     companion object {
+        val DEFAULT_SIGNAL_METHOD = SignalMethod.BUTTON
         const val DEFAULT_TOPICS_PER_ROUND = 5
         const val DEFAULT_TOPIC_DURATION_SEC = 30
         const val DEFAULT_PRE_ROUND_COUNTDOWN_SEC = 5
         const val DEFAULT_TIMEOUT_MESSAGE_DURATION_SEC = 5
         const val DEFAULT_SOUND_VOLUME_LEVEL = 7
         const val DEFAULT_SOUND_SET_ID = "scifi"
-        val DEFAULT_BACKGROUND_COLOR_PRIMARY = ThemeColorOption.COLOR6
-        val DEFAULT_BACKGROUND_COLOR_SECONDARY = ThemeColorOption.COLOR7
+        val DEFAULT_BACKGROUND_COLOR_PRIMARY = ThemeColorOption.COLOR7
+        val DEFAULT_BACKGROUND_COLOR_SECONDARY = ThemeColorOption.COLOR6
         val DEFAULT_FONT_COLOR = ThemeColorOption.COLOR1
-        val DEFAULT_ACCENT_COLOR = ThemeColorOption.COLOR7
-        val DEFAULT_ACCENT_TEXT_COLOR = ThemeColorOption.COLOR1
+        val DEFAULT_ACCENT_COLOR = ThemeColorOption.COLOR3
+        val DEFAULT_ACCENT_TEXT_COLOR = ThemeColorOption.COLOR10
     }
 }

@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.verbus.R
@@ -86,59 +87,99 @@ fun SelectionCard(
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
         ) {
-            val ultraCompact = maxHeight < 118.dp || maxWidth < 150.dp
-            val compact = ultraCompact || maxHeight < 152.dp || maxWidth < 184.dp
-            val padding = when {
-                ultraCompact -> 10.dp
-                compact -> 14.dp
-                else -> 20.dp
-            }
-            val spacing = when {
-                ultraCompact -> 6.dp
-                compact -> 8.dp
-                else -> 12.dp
-            }
-            val previewHeight = when {
-                subtitle.isNullOrBlank() && ultraCompact -> 34.dp
-                subtitle.isNullOrBlank() && compact -> 48.dp
-                subtitle.isNullOrBlank() -> 84.dp
-                ultraCompact -> 38.dp
-                compact -> 52.dp
-                else -> 88.dp
+            val hasSubtitle = !subtitle.isNullOrBlank()
+            val metrics = remember(maxWidth, maxHeight, hasSubtitle) {
+                selectionCardMetrics(
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                    hasSubtitle = hasSubtitle,
+                )
             }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(spacing, alignment = Alignment.CenterVertically),
+                verticalArrangement = Arrangement.spacedBy(metrics.spacing, alignment = Alignment.CenterVertically),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = padding, vertical = padding),
+                    .padding(horizontal = metrics.padding, vertical = metrics.padding),
             ) {
                 CategoryPreviewSlot(
                     imageResId = imageResId,
-                    height = previewHeight,
+                    height = metrics.previewHeight,
                 )
                 AdaptiveCardText(
                     text = title,
-                    largeStyle = MaterialTheme.typography.titleLarge,
-                    mediumStyle = MaterialTheme.typography.titleMedium,
-                    compactStyle = MaterialTheme.typography.titleSmall,
-                    maxLines = if (compact) 3 else 4,
+                    largeStyle = MaterialTheme.typography.titleLarge.scaled(metrics.titleScale),
+                    mediumStyle = MaterialTheme.typography.titleMedium.scaled(metrics.titleScale * 1.02f),
+                    compactStyle = MaterialTheme.typography.titleSmall.scaled(metrics.titleScale),
+                    maxLines = metrics.titleMaxLines,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 subtitle?.takeIf { it.isNotBlank() }?.let {
                     AdaptiveCardText(
                         text = it,
-                        largeStyle = MaterialTheme.typography.bodyMedium,
-                        mediumStyle = MaterialTheme.typography.bodySmall,
-                        compactStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
-                        maxLines = if (compact) 4 else 5,
+                        largeStyle = MaterialTheme.typography.bodyLarge.scaled(metrics.subtitleScale),
+                        mediumStyle = MaterialTheme.typography.bodyMedium.scaled(metrics.subtitleScale),
+                        compactStyle = MaterialTheme.typography.bodyMedium
+                            .copy(fontSize = 14.sp, lineHeight = 18.sp)
+                            .scaled(metrics.subtitleScale),
+                        maxLines = metrics.subtitleMaxLines,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
         }
     }
+}
+
+private data class SelectionCardMetrics(
+    val padding: Dp,
+    val spacing: Dp,
+    val previewHeight: Dp,
+    val titleScale: Float,
+    val subtitleScale: Float,
+    val titleMaxLines: Int,
+    val subtitleMaxLines: Int,
+)
+
+private fun selectionCardMetrics(
+    maxWidth: Dp,
+    maxHeight: Dp,
+    hasSubtitle: Boolean,
+): SelectionCardMetrics {
+    val heightScale = (maxHeight.value / if (hasSubtitle) 250f else 190f).coerceIn(0.82f, 1.30f)
+    val widthScale = (maxWidth.value / if (hasSubtitle) 260f else 180f).coerceIn(0.88f, 1.18f)
+    val contentScale = (heightScale * 0.6f + widthScale * 0.4f).coerceIn(0.84f, 1.28f)
+    val padding = (maxHeight * if (hasSubtitle) 0.075f else 0.09f).coerceIn(10.dp, 24.dp)
+    val spacing = (maxHeight * if (hasSubtitle) 0.038f else 0.05f).coerceIn(6.dp, 18.dp)
+    val previewHeight = minOf(
+        maxHeight * if (hasSubtitle) 0.32f else 0.40f,
+        maxWidth * if (hasSubtitle) 0.34f else 0.42f,
+    ).coerceIn(
+        if (hasSubtitle) 40.dp else 34.dp,
+        if (hasSubtitle) 132.dp else 118.dp,
+    )
+
+    return SelectionCardMetrics(
+        padding = padding,
+        spacing = spacing,
+        previewHeight = previewHeight,
+        titleScale = (if (hasSubtitle) contentScale * 1.14f else contentScale * 1.06f).coerceIn(0.9f, 1.34f),
+        subtitleScale = (contentScale * 10.06f).coerceIn(0.94f, 1.2f),
+        titleMaxLines = if (hasSubtitle) 3 else 4,
+        subtitleMaxLines = if (maxHeight < 180.dp || maxWidth < 220.dp) 3 else 4,
+    )
+}
+
+private fun TextStyle.scaled(scale: Float): TextStyle = copy(
+    fontSize = fontSize.scaled(scale),
+    lineHeight = lineHeight.scaled(scale),
+)
+
+private fun TextUnit.scaled(scale: Float): TextUnit = if (this == TextUnit.Unspecified) {
+    this
+} else {
+    (value * scale).sp
 }
 
 @Composable
@@ -218,6 +259,8 @@ fun StepSettingCard(
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
     modifier: Modifier = Modifier,
+    valueContainerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceVariant,
+    valueContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     val feedback = rememberUiFeedbackController()
     val decreaseDescription = stringResource(id = R.string.action_decrease)
@@ -261,7 +304,10 @@ fun StepSettingCard(
 
                 Card(
                     modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    colors = CardDefaults.cardColors(
+                        containerColor = valueContainerColor,
+                        contentColor = valueContentColor,
+                    ),
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -307,6 +353,8 @@ fun ChoiceSettingCard(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
+    valueContainerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceVariant,
+    valueContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     StepSettingCard(
         title = title,
@@ -314,6 +362,8 @@ fun ChoiceSettingCard(
         onDecrease = onPrevious,
         onIncrease = onNext,
         modifier = modifier,
+        valueContainerColor = valueContainerColor,
+        valueContentColor = valueContentColor,
     )
 }
 

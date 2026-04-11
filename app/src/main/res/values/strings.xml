@@ -10,8 +10,8 @@
     <string name="screen_category_title">Choose category</string>
     <string name="screen_options_title">Options</string>
 
-    <string name="mode_storytelling_name">Storytelling</string>
-    <string name="mode_storytelling_description">Present the topic so others can guess it before time runs out.</string>
+    <string name="mode_storytelling_name">Describe the phrase</string>
+    <string name="mode_storytelling_description">Others describe the phrase, you guess it. No using the exact words shown.</string>
 
     <string name="action_back">Back</string>
     <string name="action_play_again">Play again</string>
@@ -61,7 +61,7 @@
     <string name="options_section_sounds">Sounds</string>
     <string name="options_section_touch_feedback">Touch feedback</string>
     <string name="options_language">Language</string>
-    <string name="language_system">System default</string>
+    <string name="language_system">System</string>
     <string name="language_polish">Polish</string>
     <string name="language_english">English</string>
 
@@ -70,19 +70,19 @@
     <string name="options_signal_shake">Shake phone</string>
     <string name="options_signal_button">Button</string>
     <string name="options_topics_per_round">Topics per round</string>
-    <string name="options_topic_duration">Topic display duration (seconds)</string>
-    <string name="options_countdown_duration">Pre-round countdown (seconds)</string>
-    <string name="options_timeout_duration">Time-up message duration (seconds)</string>
-    <string name="options_haptics">Round action vibration on completed / skipped</string>
-    <string name="options_keep_screen_awake">Keep screen awake during round</string>
-    <string name="options_theme_background_primary">Background color 1</string>
-    <string name="options_theme_background_secondary">Background color 2</string>
+    <string name="options_topic_duration">Topic display duration (s)</string>
+    <string name="options_countdown_duration">Pre-round countdown (s)</string>
+    <string name="options_timeout_duration">Round time-up duration (s)</string>
+    <string name="options_haptics">Action vibration</string>
+    <string name="options_keep_screen_awake">Keep screen awake</string>
+    <string name="options_theme_background_primary">Primary color</string>
+    <string name="options_theme_background_secondary">Secondary color</string>
     <string name="options_theme_font_color">Font color</string>
-    <string name="options_theme_accent_color">Accent / button color</string>
+    <string name="options_theme_accent_color">Button color</string>
     <string name="options_theme_accent_text_color">Accent text color</string>
     <string name="options_sounds_enabled">Enable sounds</string>
     <string name="options_sound_set">Sound set</string>
-    <string name="options_sound_set_builtin">Built-in procedural</string>
+    <string name="options_sound_set_builtin">Basic</string>
     <string name="options_sound_volume">Sound volume (1–10)</string>
     <string name="options_touch_visual_feedback">Visual touch feedback</string>
     <string name="options_touch_haptic_feedback">Vibration touch feedback</string>

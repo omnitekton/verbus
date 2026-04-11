@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.media.ToneGenerator
+import android.util.Log
 import io.github.verbus.domain.model.AppSettings
 import io.github.verbus.domain.model.SoundEffect
 import io.github.verbus.domain.model.SoundSetOption
@@ -45,7 +46,7 @@ class ProceduralSoundPlayer(
 
     private val catalog: Map<String, Map<SoundEffect, AssetSoundFile>> = buildCatalog()
     private val options: List<SoundSetOption> = buildList {
-        add(SoundSetOption(AppSettings.DEFAULT_SOUND_SET_ID, "Built-in procedural"))
+        add(SoundSetOption(BUILT_IN_SOUND_SET_ID, "Built-in procedural"))
         addAll(
             catalog.keys.sorted().map { setId ->
                 SoundSetOption(id = setId, displayName = prettifySoundSetName(setId))
@@ -58,7 +59,7 @@ class ProceduralSoundPlayer(
     private val soundIdToKey = ConcurrentHashMap<Int, String>()
 
     @Volatile
-    private var activeSoundSetId: String = AppSettings.DEFAULT_SOUND_SET_ID
+    private var activeSoundSetId: String = normalizeSelectedSoundSetId(AppSettings.DEFAULT_SOUND_SET_ID)
 
     init {
         cacheRoot.mkdirs()
@@ -73,24 +74,36 @@ class ProceduralSoundPlayer(
         }
         scope.launch {
             preloadBuiltInProceduralSet()
+            if (activeSoundSetId != BUILT_IN_SOUND_SET_ID) {
+                prepareSelectedSet(activeSoundSetId)
+            }
         }
     }
 
     fun availableSoundSets(): List<SoundSetOption> = options
 
     fun prepareSelectedSet(setId: String) {
-        val normalizedId = setId.ifBlank { AppSettings.DEFAULT_SOUND_SET_ID }
+        val normalizedId = normalizeSelectedSoundSetId(setId)
         activeSoundSetId = normalizedId
 
         scope.launch {
-            if (normalizedId == AppSettings.DEFAULT_SOUND_SET_ID) {
+            if (normalizedId == BUILT_IN_SOUND_SET_ID) {
                 preloadBuiltInProceduralSet()
                 return@launch
             }
 
-            val assetMap = catalog[normalizedId] ?: return@launch
+            val assetMap = catalog[normalizedId]
+            if (assetMap.isNullOrEmpty()) {
+                Log.w(TAG, "Requested sound set '$normalizedId' is unavailable. Falling back to built-in procedural sounds.")
+                activeSoundSetId = BUILT_IN_SOUND_SET_ID
+                preloadBuiltInProceduralSet()
+                return@launch
+            }
+
             assetMap.forEach { (effect, assetFile) ->
-                ensureAssetSoundLoaded(normalizedId, effect, assetFile)
+                if (!ensureAssetSoundLoaded(normalizedId, effect, assetFile)) {
+                    ensureProceduralSoundLoaded(effect)
+                }
             }
         }
     }
@@ -101,11 +114,11 @@ class ProceduralSoundPlayer(
         val selectedSetId = activeSoundSetId
         val volume = (volumeLevel.coerceIn(1, 10) / 10f).coerceIn(0.1f, 1f)
         val selectedKey = soundKey(selectedSetId, effect)
-        val proceduralKey = soundKey(AppSettings.DEFAULT_SOUND_SET_ID, effect)
+        val proceduralKey = soundKey(BUILT_IN_SOUND_SET_ID, effect)
 
         playLoadedSound(selectedKey, volume)?.let { return }
 
-        if (selectedSetId == AppSettings.DEFAULT_SOUND_SET_ID) {
+        if (selectedSetId == BUILT_IN_SOUND_SET_ID) {
             if (pendingSoundIds[selectedKey] == null) {
                 scope.launch { ensureProceduralSoundLoaded(effect) }
             }
@@ -140,57 +153,63 @@ class ProceduralSoundPlayer(
         SoundEffect.entries.forEach(::ensureProceduralSoundLoaded)
     }
 
-    private fun ensureProceduralSoundLoaded(effect: SoundEffect) {
-        val key = soundKey(AppSettings.DEFAULT_SOUND_SET_ID, effect)
-        val cachedFile = buildProceduralCacheFile(effect) ?: return
-        ensureSoundFileLoaded(key = key, file = cachedFile)
+    private fun ensureProceduralSoundLoaded(effect: SoundEffect): Boolean {
+        val key = soundKey(BUILT_IN_SOUND_SET_ID, effect)
+        val cachedFile = buildProceduralCacheFile(effect) ?: return false
+        return ensureSoundFileLoaded(key = key, file = cachedFile)
     }
 
     private fun ensureAssetSoundLoaded(
         setId: String,
         effect: SoundEffect,
         assetFile: AssetSoundFile,
-    ) {
+    ): Boolean {
         val key = soundKey(setId, effect)
-        val cachedFile = copyAssetToCache(setId = setId, assetFile = assetFile)
-        ensureSoundFileLoaded(key = key, file = cachedFile)
+        val cachedFile = copyAssetToCache(setId = setId, assetFile = assetFile) ?: return false
+        return ensureSoundFileLoaded(key = key, file = cachedFile)
     }
 
     private fun ensureSoundFileLoaded(
         key: String,
         file: File,
-    ) {
-        synchronized(loadLock) {
-            if (readySoundIds.containsKey(key) || pendingSoundIds.containsKey(key)) return
+    ): Boolean = synchronized(loadLock) {
+        if (readySoundIds.containsKey(key) || pendingSoundIds.containsKey(key)) return@synchronized true
 
-            val soundId = try {
-                soundPool.load(file.absolutePath, 1)
-            } catch (_: RuntimeException) {
-                return
-            }
-
-            pendingSoundIds[key] = soundId
-            soundIdToKey[soundId] = key
+        val soundId = try {
+            soundPool.load(file.absolutePath, 1)
+        } catch (exception: RuntimeException) {
+            Log.w(TAG, "Failed to queue sound '$key' from ${file.absolutePath}.", exception)
+            return@synchronized false
         }
+
+        pendingSoundIds[key] = soundId
+        soundIdToKey[soundId] = key
+        true
     }
 
-    private fun copyAssetToCache(setId: String, assetFile: AssetSoundFile): File {
+    private fun copyAssetToCache(setId: String, assetFile: AssetSoundFile): File? {
         val setCacheDir = File(cacheRoot, setId).apply { mkdirs() }
         val outputFile = File(setCacheDir, assetFile.fileName)
         if (outputFile.exists() && outputFile.length() > 0L) {
             return outputFile
         }
 
-        assets.open(assetFile.assetPath).use { input ->
-            outputFile.outputStream().use { output ->
-                input.copyTo(output)
+        return try {
+            assets.open(assetFile.assetPath).use { input ->
+                outputFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
+            outputFile
+        } catch (exception: Exception) {
+            outputFile.delete()
+            Log.w(TAG, "Failed to cache sound asset '${assetFile.assetPath}'. Falling back to built-in sound.", exception)
+            null
         }
-        return outputFile
     }
 
     private fun buildProceduralCacheFile(effect: SoundEffect): File? = synchronized(loadLock) {
-        val proceduralDir = File(cacheRoot, AppSettings.DEFAULT_SOUND_SET_ID).apply { mkdirs() }
+        val proceduralDir = File(cacheRoot, BUILT_IN_SOUND_SET_ID).apply { mkdirs() }
         val outputFile = File(proceduralDir, "${effect.name.lowercase(Locale.ROOT)}.wav")
         if (outputFile.exists() && outputFile.length() > 0L) {
             return@synchronized outputFile
@@ -200,9 +219,20 @@ class ProceduralSoundPlayer(
             val spec = builtInSoundSpec(effect)
             outputFile.writeBytes(renderWav(spec))
             outputFile
-        } catch (_: Exception) {
+        } catch (exception: Exception) {
             outputFile.delete()
+            Log.w(TAG, "Failed to render procedural sound for ${effect.name}.", exception)
             null
+        }
+    }
+
+    private fun normalizeSelectedSoundSetId(setId: String): String {
+        val preferredId = setId.ifBlank { AppSettings.DEFAULT_SOUND_SET_ID }
+        return when {
+            preferredId == BUILT_IN_SOUND_SET_ID -> BUILT_IN_SOUND_SET_ID
+            catalog.containsKey(preferredId) -> preferredId
+            catalog.containsKey(AppSettings.DEFAULT_SOUND_SET_ID) -> AppSettings.DEFAULT_SOUND_SET_ID
+            else -> BUILT_IN_SOUND_SET_ID
         }
     }
 
@@ -472,6 +502,8 @@ class ProceduralSoundPlayer(
     )
 
     companion object {
+        private const val TAG = "ProceduralSoundPlayer"
+        private const val BUILT_IN_SOUND_SET_ID = "builtin_procedural"
         private const val SOUNDSETS_ROOT = "soundsets"
         private const val SAMPLE_RATE = 44_100
         private const val BITS_PER_SAMPLE = 16
