@@ -29,6 +29,9 @@
     <string name="round_skipped_counter">Skipped: %1$d</string>
     <string name="round_timer_label">Time left: %1$d s</string>
     <string name="round_topic_label">Current topic</string>
+    <string name="round_completed_label">Completed</string>
+    <string name="round_timed_out_label">Timed out</string>
+    <string name="round_skipped_label">Skipped</string>
 
     <string name="round_signal_instruction_double_tap">Double tap near the center of the screen.</string>
     <string name="round_signal_instruction_shake">Shake the phone once.</string>

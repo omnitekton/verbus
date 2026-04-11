@@ -1,12 +1,10 @@
 package io.github.verbus.ui.feedback
 
-import android.Manifest
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.material3.MaterialTheme
@@ -99,7 +97,6 @@ private class DefaultUiFeedbackController(
         }
     }
 
-    @RequiresPermission(Manifest.permission.VIBRATE)
     private fun vibrateTap(context: Context) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java)?.defaultVibrator

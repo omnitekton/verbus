@@ -9,7 +9,7 @@ import android.hardware.SensorManager
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -534,16 +534,19 @@ private fun PortraitTopStatsPanel(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                PortraitStatCell(
-                    text = stringResource(id = R.string.round_completed_counter, round.completedCount),
+                PortraitCounterStatCell(
+                    label = stringResource(id = R.string.round_completed_label),
+                    value = round.completedCount.toString(),
                     modifier = Modifier.weight(1f),
                 )
-                PortraitStatCell(
-                    text = stringResource(id = R.string.round_timed_out_counter, round.timedOutCount),
+                PortraitCounterStatCell(
+                    label = stringResource(id = R.string.round_timed_out_label),
+                    value = round.timedOutCount.toString(),
                     modifier = Modifier.weight(1f),
                 )
-                PortraitStatCell(
-                    text = stringResource(id = R.string.round_skipped_counter, round.skippedCount),
+                PortraitCounterStatCell(
+                    label = stringResource(id = R.string.round_skipped_label),
+                    value = round.skippedCount.toString(),
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -567,8 +570,8 @@ private fun PortraitStatCell(
                 .padding(horizontal = 8.dp, vertical = 10.dp),
         ) {
             val statStyle = when {
-                maxWidth < 88.dp || text.length > 18 -> MaterialTheme.typography.bodySmall
-                maxWidth < 112.dp || text.length > 12 -> MaterialTheme.typography.bodyMedium
+                maxWidth < 92.dp || text.length > 22 -> MaterialTheme.typography.bodySmall
+                maxWidth < 124.dp || text.length > 15 -> MaterialTheme.typography.bodyMedium
                 else -> MaterialTheme.typography.bodyLarge
             }
             Text(
@@ -579,6 +582,62 @@ private fun PortraitStatCell(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+    }
+}
+
+@Composable
+private fun PortraitCounterStatCell(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier.heightIn(min = 112.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        BoxWithConstraints(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 10.dp),
+        ) {
+            val compact = maxWidth < 104.dp
+            val labelStyle = if (compact) {
+                MaterialTheme.typography.bodySmall
+            } else {
+                MaterialTheme.typography.bodyMedium
+            }
+            val valueStyle = if (compact) {
+                MaterialTheme.typography.titleLarge
+            } else {
+                MaterialTheme.typography.headlineSmall
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 92.dp),
+            ) {
+                Text(
+                    text = label,
+                    style = labelStyle,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = value,
+                    style = valueStyle,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -885,23 +944,23 @@ private fun TopicPhaseLayout(
             val availableWidth = maxWidth
             val availableHeight = maxHeight
             val baseFontSize = when {
-                isLandscape && availableWidth >= 900.dp -> 82f
-                isLandscape -> 70f
-                availableWidth > availableHeight -> 44f
-                else -> 58f
+                isLandscape && availableWidth >= 900.dp -> 88f
+                isLandscape -> 76f
+                availableWidth > availableHeight -> 48f
+                else -> 64f
             }
             val baseLineHeight = when {
-                isLandscape && availableWidth >= 900.dp -> 92f
-                isLandscape -> 80f
-                availableWidth > availableHeight -> 52f
-                else -> 68f
+                isLandscape && availableWidth >= 900.dp -> 98f
+                isLandscape -> 86f
+                availableWidth > availableHeight -> 58f
+                else -> 74f
             }
             val textScale = when {
-                topicText.length > 96 -> 0.48f
-                topicText.length > 72 -> 0.56f
-                topicText.length > 56 -> 0.64f
-                topicText.length > 40 -> 0.74f
-                topicText.length > 28 -> 0.84f
+                topicText.length > 120 -> 0.58f
+                topicText.length > 96 -> 0.68f
+                topicText.length > 72 -> 0.78f
+                topicText.length > 48 -> 0.88f
+                topicText.length > 32 -> 0.94f
                 else -> 1f
             }
             val topicFontSize = (baseFontSize * textScale).sp
@@ -1531,30 +1590,29 @@ private fun TouchPulseLayer(
 ) {
     if (!enabled || pulse == null) return
 
-    var animateTarget by remember(pulse.token) { mutableStateOf(0f) }
-    val progress by animateFloatAsState(
-        targetValue = animateTarget,
-        animationSpec = tween(durationMillis = 320),
-        label = "touchPulse",
-    )
+    val progress = remember(pulse.token) { Animatable(0f) }
 
     LaunchedEffect(pulse.token) {
-        animateTarget = 0f
-        animateTarget = 1f
+        progress.snapTo(0f)
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 320),
+        )
     }
 
     val primaryColor = MaterialTheme.colorScheme.primary
 
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val animatedProgress = progress.value
         val maxRadius = size.minDimension * 0.22f
         drawCircle(
-            color = primaryColor.copy(alpha = (1f - progress) * 0.28f),
-            radius = maxRadius * (0.35f + progress),
+            color = primaryColor.copy(alpha = (1f - animatedProgress) * 0.28f),
+            radius = maxRadius * (0.35f + animatedProgress),
             center = pulse.offset,
         )
         drawCircle(
-            color = primaryColor.copy(alpha = (1f - progress) * 0.16f),
-            radius = maxRadius * (0.7f + progress * 0.55f),
+            color = primaryColor.copy(alpha = (1f - animatedProgress) * 0.16f),
+            radius = maxRadius * (0.7f + animatedProgress * 0.55f),
             center = pulse.offset,
         )
     }

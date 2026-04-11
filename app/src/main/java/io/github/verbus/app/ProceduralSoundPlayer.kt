@@ -15,9 +15,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.PI
+import kotlin.math.roundToInt
+import kotlin.math.sin
 
 class ProceduralSoundPlayer(
     context: Context,
@@ -25,7 +29,8 @@ class ProceduralSoundPlayer(
     private val appContext = context.applicationContext
     private val assets = appContext.assets
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val proceduralMutex = Mutex()
+    private val toneFallbackMutex = Mutex()
+    private val loadLock = Any()
     private val cacheRoot = File(appContext.cacheDir, "soundsets")
 
     private val soundPool: SoundPool = SoundPool.Builder()
@@ -35,7 +40,7 @@ class ProceduralSoundPlayer(
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build(),
         )
-        .setMaxStreams(8)
+        .setMaxStreams(16)
         .build()
 
     private val catalog: Map<String, Map<SoundEffect, AssetSoundFile>> = buildCatalog()
@@ -59,12 +64,15 @@ class ProceduralSoundPlayer(
         cacheRoot.mkdirs()
         soundPool.setOnLoadCompleteListener { _, soundId, status ->
             val key = soundIdToKey[soundId] ?: return@setOnLoadCompleteListener
+            pendingSoundIds.remove(key)
             if (status == 0) {
                 readySoundIds[key] = soundId
             } else {
-                pendingSoundIds.remove(key)
                 readySoundIds.remove(key)
             }
+        }
+        scope.launch {
+            preloadBuiltInProceduralSet()
         }
     }
 
@@ -73,12 +81,16 @@ class ProceduralSoundPlayer(
     fun prepareSelectedSet(setId: String) {
         val normalizedId = setId.ifBlank { AppSettings.DEFAULT_SOUND_SET_ID }
         activeSoundSetId = normalizedId
-        if (normalizedId == AppSettings.DEFAULT_SOUND_SET_ID) return
-        val assetMap = catalog[normalizedId] ?: return
 
         scope.launch {
+            if (normalizedId == AppSettings.DEFAULT_SOUND_SET_ID) {
+                preloadBuiltInProceduralSet()
+                return@launch
+            }
+
+            val assetMap = catalog[normalizedId] ?: return@launch
             assetMap.forEach { (effect, assetFile) ->
-                ensureSoundLoaded(normalizedId, effect, assetFile)
+                ensureAssetSoundLoaded(normalizedId, effect, assetFile)
             }
         }
     }
@@ -86,48 +98,80 @@ class ProceduralSoundPlayer(
     fun play(effect: SoundEffect, enabled: Boolean, volumeLevel: Int) {
         if (!enabled) return
 
-        val setId = activeSoundSetId
+        val selectedSetId = activeSoundSetId
         val volume = (volumeLevel.coerceIn(1, 10) / 10f).coerceIn(0.1f, 1f)
-        val loadedKey = soundKey(setId, effect)
-        val soundId = readySoundIds[loadedKey]
+        val selectedKey = soundKey(selectedSetId, effect)
+        val proceduralKey = soundKey(AppSettings.DEFAULT_SOUND_SET_ID, effect)
 
-        if (setId != AppSettings.DEFAULT_SOUND_SET_ID && soundId != null) {
-            try {
-                soundPool.play(soundId, volume, volume, 1, 0, 1f)
-                return
-            } catch (_: RuntimeException) {
-                readySoundIds.remove(loadedKey)
+        playLoadedSound(selectedKey, volume)?.let { return }
+
+        if (selectedSetId == AppSettings.DEFAULT_SOUND_SET_ID) {
+            if (pendingSoundIds[selectedKey] == null) {
+                scope.launch { ensureProceduralSoundLoaded(effect) }
             }
-        }
-
-        if (setId != AppSettings.DEFAULT_SOUND_SET_ID && pendingSoundIds[loadedKey] == null) {
-            catalog[setId]?.get(effect)?.let { assetFile ->
-                scope.launch {
-                    ensureSoundLoaded(setId, effect, assetFile)
+        } else {
+            if (pendingSoundIds[selectedKey] == null) {
+                catalog[selectedSetId]?.get(effect)?.let { assetFile ->
+                    scope.launch { ensureAssetSoundLoaded(selectedSetId, effect, assetFile) }
                 }
             }
+
+            playLoadedSound(proceduralKey, volume)?.let { return }
+            if (pendingSoundIds[proceduralKey] == null) {
+                scope.launch { ensureProceduralSoundLoaded(effect) }
+            }
         }
 
-        playProcedural(effect = effect, volumeLevel = volumeLevel)
+        playToneFallback(effect = effect, volumeLevel = volumeLevel)
     }
 
-    private suspend fun ensureSoundLoaded(
+    private fun playLoadedSound(key: String, volume: Float): Unit? {
+        val soundId = readySoundIds[key] ?: return null
+        return try {
+            val streamId = soundPool.play(soundId, volume, volume, 1, 0, 1f)
+            if (streamId != 0) Unit else null
+        } catch (_: RuntimeException) {
+            readySoundIds.remove(key)
+            null
+        }
+    }
+
+    private fun preloadBuiltInProceduralSet() {
+        SoundEffect.entries.forEach(::ensureProceduralSoundLoaded)
+    }
+
+    private fun ensureProceduralSoundLoaded(effect: SoundEffect) {
+        val key = soundKey(AppSettings.DEFAULT_SOUND_SET_ID, effect)
+        val cachedFile = buildProceduralCacheFile(effect) ?: return
+        ensureSoundFileLoaded(key = key, file = cachedFile)
+    }
+
+    private fun ensureAssetSoundLoaded(
         setId: String,
         effect: SoundEffect,
         assetFile: AssetSoundFile,
     ) {
         val key = soundKey(setId, effect)
-        if (readySoundIds.containsKey(key) || pendingSoundIds.containsKey(key)) return
-
         val cachedFile = copyAssetToCache(setId = setId, assetFile = assetFile)
-        val soundId = try {
-            soundPool.load(cachedFile.absolutePath, 1)
-        } catch (_: RuntimeException) {
-            return
-        }
+        ensureSoundFileLoaded(key = key, file = cachedFile)
+    }
 
-        pendingSoundIds[key] = soundId
-        soundIdToKey[soundId] = key
+    private fun ensureSoundFileLoaded(
+        key: String,
+        file: File,
+    ) {
+        synchronized(loadLock) {
+            if (readySoundIds.containsKey(key) || pendingSoundIds.containsKey(key)) return
+
+            val soundId = try {
+                soundPool.load(file.absolutePath, 1)
+            } catch (_: RuntimeException) {
+                return
+            }
+
+            pendingSoundIds[key] = soundId
+            soundIdToKey[soundId] = key
+        }
     }
 
     private fun copyAssetToCache(setId: String, assetFile: AssetSoundFile): File {
@@ -143,6 +187,23 @@ class ProceduralSoundPlayer(
             }
         }
         return outputFile
+    }
+
+    private fun buildProceduralCacheFile(effect: SoundEffect): File? = synchronized(loadLock) {
+        val proceduralDir = File(cacheRoot, AppSettings.DEFAULT_SOUND_SET_ID).apply { mkdirs() }
+        val outputFile = File(proceduralDir, "${effect.name.lowercase(Locale.ROOT)}.wav")
+        if (outputFile.exists() && outputFile.length() > 0L) {
+            return@synchronized outputFile
+        }
+
+        return@synchronized try {
+            val spec = builtInSoundSpec(effect)
+            outputFile.writeBytes(renderWav(spec))
+            outputFile
+        } catch (_: Exception) {
+            outputFile.delete()
+            null
+        }
     }
 
     private fun buildCatalog(): Map<String, Map<SoundEffect, AssetSoundFile>> {
@@ -205,11 +266,129 @@ class ProceduralSoundPlayer(
             }
         }
 
-    private fun playProcedural(effect: SoundEffect, volumeLevel: Int) {
+    private fun builtInSoundSpec(effect: SoundEffect): SoundSpec = when (effect) {
+        SoundEffect.SINGLE_TAP -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 920.0, durationMs = 56, amplitude = 0.42f),
+            ),
+        )
+        SoundEffect.DOUBLE_TAP -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 960.0, durationMs = 46, amplitude = 0.42f),
+                ToneSlice(frequencyHz = null, durationMs = 34),
+                ToneSlice(frequencyHz = 1220.0, durationMs = 62, amplitude = 0.46f),
+            ),
+        )
+        SoundEffect.BUTTON_PRESS -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 780.0, durationMs = 62, amplitude = 0.44f),
+            ),
+        )
+        SoundEffect.TOPIC_SUCCESS -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 880.0, durationMs = 78, amplitude = 0.44f),
+                ToneSlice(frequencyHz = null, durationMs = 24),
+                ToneSlice(frequencyHz = 1175.0, durationMs = 104, amplitude = 0.52f),
+            ),
+        )
+        SoundEffect.TOPIC_SKIP -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 720.0, durationMs = 48, amplitude = 0.42f),
+                ToneSlice(frequencyHz = null, durationMs = 18),
+                ToneSlice(frequencyHz = 430.0, durationMs = 108, amplitude = 0.46f),
+            ),
+        )
+        SoundEffect.TOPIC_TIMEOUT -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 360.0, durationMs = 210, amplitude = 0.48f),
+            ),
+        )
+        SoundEffect.ROUND_SUCCESS -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 880.0, durationMs = 84, amplitude = 0.42f),
+                ToneSlice(frequencyHz = null, durationMs = 20),
+                ToneSlice(frequencyHz = 1175.0, durationMs = 92, amplitude = 0.48f),
+                ToneSlice(frequencyHz = null, durationMs = 24),
+                ToneSlice(frequencyHz = 1568.0, durationMs = 136, amplitude = 0.56f),
+            ),
+        )
+        SoundEffect.ROUND_FAILURE -> SoundSpec(
+            slices = listOf(
+                ToneSlice(frequencyHz = 390.0, durationMs = 132, amplitude = 0.46f),
+                ToneSlice(frequencyHz = null, durationMs = 24),
+                ToneSlice(frequencyHz = 310.0, durationMs = 184, amplitude = 0.50f),
+            ),
+        )
+    }
+
+    private fun renderWav(spec: SoundSpec): ByteArray {
+        val sampleRate = SAMPLE_RATE
+        val pcm = ByteArrayOutputStream()
+
+        spec.slices.forEach { slice ->
+            val sampleCount = (slice.durationMs / 1000.0 * sampleRate).roundToInt().coerceAtLeast(1)
+            val attackSamples = (sampleCount * 0.08f).roundToInt().coerceIn(1, 220)
+            val releaseSamples = (sampleCount * 0.18f).roundToInt().coerceIn(1, 320)
+            for (sampleIndex in 0 until sampleCount) {
+                val normalizedAmplitude = when {
+                    slice.frequencyHz == null -> 0.0
+                    sampleIndex < attackSamples -> slice.amplitude * (sampleIndex.toDouble() / attackSamples)
+                    sampleIndex >= sampleCount - releaseSamples -> {
+                        val remaining = (sampleCount - sampleIndex).coerceAtLeast(0)
+                        slice.amplitude * (remaining.toDouble() / releaseSamples)
+                    }
+                    else -> slice.amplitude.toDouble()
+                }
+                val sampleValue = if (slice.frequencyHz == null) {
+                    0.0
+                } else {
+                    val angle = 2.0 * PI * slice.frequencyHz * sampleIndex / sampleRate
+                    sin(angle) * normalizedAmplitude
+                }
+                val pcmSample = (sampleValue * Short.MAX_VALUE)
+                    .roundToInt()
+                    .coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt())
+                    .toShort()
+                writeLittleEndianShort(pcm, pcmSample)
+            }
+        }
+
+        val pcmBytes = pcm.toByteArray()
+        return ByteArrayOutputStream(44 + pcmBytes.size).apply {
+            write("RIFF".encodeToByteArray())
+            writeLittleEndianInt(this, 36 + pcmBytes.size)
+            write("WAVE".encodeToByteArray())
+            write("fmt ".encodeToByteArray())
+            writeLittleEndianInt(this, 16)
+            writeLittleEndianShort(this, 1.toShort())
+            writeLittleEndianShort(this, 1.toShort())
+            writeLittleEndianInt(this, sampleRate)
+            writeLittleEndianInt(this, sampleRate * BYTES_PER_SAMPLE)
+            writeLittleEndianShort(this, BYTES_PER_SAMPLE.toShort())
+            writeLittleEndianShort(this, BITS_PER_SAMPLE.toShort())
+            write("data".encodeToByteArray())
+            writeLittleEndianInt(this, pcmBytes.size)
+            write(pcmBytes)
+        }.toByteArray()
+    }
+
+    private fun writeLittleEndianInt(stream: ByteArrayOutputStream, value: Int) {
+        stream.write(value and 0xFF)
+        stream.write(value shr 8 and 0xFF)
+        stream.write(value shr 16 and 0xFF)
+        stream.write(value shr 24 and 0xFF)
+    }
+
+    private fun writeLittleEndianShort(stream: ByteArrayOutputStream, value: Short) {
+        stream.write(value.toInt() and 0xFF)
+        stream.write(value.toInt() shr 8 and 0xFF)
+    }
+
+    private fun playToneFallback(effect: SoundEffect, volumeLevel: Int) {
         val toneVolume = (volumeLevel.coerceIn(1, 10) * 10).coerceIn(10, 100)
 
         scope.launch(Dispatchers.Default) {
-            proceduralMutex.withLock {
+            toneFallbackMutex.withLock {
                 val generator = try {
                     ToneGenerator(AudioManager.STREAM_MUSIC, toneVolume)
                 } catch (_: RuntimeException) {
@@ -219,55 +398,55 @@ class ProceduralSoundPlayer(
                 try {
                     when (effect) {
                         SoundEffect.SINGLE_TAP -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 35)
-                            delay(45)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 60)
+                            delay(80)
                         }
 
                         SoundEffect.DOUBLE_TAP -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 50)
-                            delay(60)
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 50)
-                            delay(70)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 56)
+                            delay(84)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 72)
+                            delay(98)
                         }
 
                         SoundEffect.BUTTON_PRESS -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 45)
-                            delay(55)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 68)
+                            delay(92)
                         }
 
                         SoundEffect.TOPIC_SUCCESS -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_ACK, 110)
-                            delay(130)
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 80)
-                            delay(100)
+                            generator.startTone(ToneGenerator.TONE_PROP_ACK, 96)
+                            delay(124)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 108)
+                            delay(138)
                         }
 
                         SoundEffect.TOPIC_SKIP -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 50)
-                            delay(55)
-                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 90)
-                            delay(110)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP, 58)
+                            delay(86)
+                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 112)
+                            delay(144)
                         }
 
                         SoundEffect.TOPIC_TIMEOUT -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 180)
-                            delay(200)
+                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 210)
+                            delay(244)
                         }
 
                         SoundEffect.ROUND_SUCCESS -> {
-                            generator.startTone(ToneGenerator.TONE_PROP_ACK, 130)
-                            delay(150)
-                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 110)
-                            delay(130)
-                            generator.startTone(ToneGenerator.TONE_PROP_PROMPT, 160)
-                            delay(180)
+                            generator.startTone(ToneGenerator.TONE_PROP_ACK, 104)
+                            delay(132)
+                            generator.startTone(ToneGenerator.TONE_PROP_BEEP2, 118)
+                            delay(146)
+                            generator.startTone(ToneGenerator.TONE_PROP_PROMPT, 148)
+                            delay(184)
                         }
 
                         SoundEffect.ROUND_FAILURE -> {
-                            generator.startTone(ToneGenerator.TONE_SUP_ERROR, 180)
-                            delay(190)
-                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 180)
-                            delay(200)
+                            generator.startTone(ToneGenerator.TONE_SUP_ERROR, 188)
+                            delay(220)
+                            generator.startTone(ToneGenerator.TONE_PROP_NACK, 196)
+                            delay(232)
                         }
                     }
                 } finally {
@@ -282,8 +461,21 @@ class ProceduralSoundPlayer(
         val fileName: String,
     )
 
+    private data class SoundSpec(
+        val slices: List<ToneSlice>,
+    )
+
+    private data class ToneSlice(
+        val frequencyHz: Double?,
+        val durationMs: Int,
+        val amplitude: Float = 0f,
+    )
+
     companion object {
         private const val SOUNDSETS_ROOT = "soundsets"
+        private const val SAMPLE_RATE = 44_100
+        private const val BITS_PER_SAMPLE = 16
+        private const val BYTES_PER_SAMPLE = 2
         private val SUPPORTED_EXTENSIONS = listOf("ogg", "mp3", "wav", "m4a")
     }
 }

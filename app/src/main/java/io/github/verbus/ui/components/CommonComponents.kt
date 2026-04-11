@@ -380,8 +380,8 @@ private fun AdaptiveCardText(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val style = when {
-            maxWidth < 120.dp || text.length > 44 -> compactStyle
-            maxWidth < 170.dp || text.length > 26 -> mediumStyle
+            maxWidth < 104.dp || text.length > 58 -> compactStyle
+            maxWidth < 152.dp || text.length > 34 -> mediumStyle
             else -> largeStyle
         }
         Text(

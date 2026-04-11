@@ -36,11 +36,11 @@ data class AppSettings(
         const val DEFAULT_PRE_ROUND_COUNTDOWN_SEC = 5
         const val DEFAULT_TIMEOUT_MESSAGE_DURATION_SEC = 5
         const val DEFAULT_SOUND_VOLUME_LEVEL = 7
-        const val DEFAULT_SOUND_SET_ID = "procedural"
-        val DEFAULT_BACKGROUND_COLOR_PRIMARY = ThemeColorOption.COLOR5
-        val DEFAULT_BACKGROUND_COLOR_SECONDARY = ThemeColorOption.COLOR3
+        const val DEFAULT_SOUND_SET_ID = "scifi"
+        val DEFAULT_BACKGROUND_COLOR_PRIMARY = ThemeColorOption.COLOR6
+        val DEFAULT_BACKGROUND_COLOR_SECONDARY = ThemeColorOption.COLOR7
         val DEFAULT_FONT_COLOR = ThemeColorOption.COLOR1
-        val DEFAULT_ACCENT_COLOR = ThemeColorOption.COLOR10
+        val DEFAULT_ACCENT_COLOR = ThemeColorOption.COLOR7
         val DEFAULT_ACCENT_TEXT_COLOR = ThemeColorOption.COLOR1
     }
 }
